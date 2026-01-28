@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>لعبة XO الحديثة - عربية</title>
+
+  <style>
+    :root{
+      --bg0:#070b14;
+      --bg1:#0b1220;
+      --card: rgba(255,255,255,.08);
+      --card2: rgba(255,255,255,.12);
+      --stroke: rgba(255,255,255,.14);
+      --text:#eaf0ff;
+      --muted: rgba(234,240,255,.72);
+      --shadow: 0 18px 50px rgba(0,0,0,.45);
+      --radius: 20px;
+
+      --a:#59d0ff;
+      --b:#9d7bff;
+      --c:#3cffc8;
+      --d:#ffcc4d;
+      --e:#ff5fa2;
+
+      --win:#44ffb8;
+      --lose:#ff6b8b;
+      --draw:#ffd166;
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      color:var(--text);
+      min-height:100svh;
+      background:
+        radial-gradient(900px 500px at 10% 15%, rgba(89,208,255,.22), transparent 60%),
+        radial-gradient(700px 450px at 95% 20%, rgba(157,123,255,.22), transparent 60%),
+        radial-gradient(900px 600px at 40% 105%, rgba(60,255,200,.18), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      display:flex;
+      align-items:stretch;
+      justify-content:center;
+    }
+
+    /* App layout */
+    .app{
+      width:min(1100px, 100%);
+      display:flex;
+      flex-direction:column;
+      min-height:100svh;
+      padding: 18px 18px 88px; /* bottom space for pinned footer */
+      gap:16px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex;
+      gap:12px;
+      align-items:center;
+      min-width: 220px;
+    }
+
+    .logo{
+      width:42px;height:42px;border-radius:14px;
+      background: conic-gradient(from 180deg, var(--a), var(--b), var(--c), var(--e), var(--a));
+      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.55), transparent 60%);
+      transform: rotate(20deg);
+    }
+
+    .brand h1{
+      margin:0;
+      font-size: 1.05rem;
+      line-height:1.2;
+      letter-spacing:.2px;
+      font-weight:800;
+    }
+    .brand .sub{
+      margin:2px 0 0;
+      font-size:.85rem;
+      color:var(--muted);
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--text);
+      font-size:.92rem;
+      user-select:none;
+      white-space:nowrap;
+    }
+
+    .btn{
+      border:0;
+      cursor:pointer;
+      padding: 10px 14px;
+      border-radius: 14px;
+      color: #06101c;
+      font-weight:800;
+      font-size:.95rem;
+      background: linear-gradient(135deg, var(--d), #fff1b3);
+      box-shadow: 0 14px 30px rgba(0,0,0,.35);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .btn:active{ transform: scale(.98); }
+    .btn.secondary{
+      color:var(--text);
+      background: rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: none;
+    }
+    .btn.danger{
+      color: #fff;
+      background: linear-gradient(135deg, var(--lose), #ff3d6e);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:16px;
+      align-items:stretch;
+      flex:1;
+    }
+
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+      .brand{ min-width:auto; }
+    }
+
+    .card{
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .cardHeader{
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.10);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .cardHeader h2{
+      margin:0;
+      font-size:1rem;
+      letter-spacing:.2px;
+    }
+    .cardBody{
+      padding: 16px;
+    }
+
+    /* Board */
+    .boardWrap{
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .statusRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .statusText{
+      font-size:1rem;
+      font-weight:800;
+    }
+    .statusHint{
+      color:var(--muted);
+      font-size:.9rem;
+    }
+
+    .board{
+      width:min(420px, 100%);
+      aspect-ratio:1/1;
+      margin-inline:auto;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 14px;
+      border-radius: calc(var(--radius) + 8px);
+      background: rgba(0,0,0,.18);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
+    }
+
+    .cell{
+      border:0;
+      cursor:pointer;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.12);
+      box-shadow: 0 10px 25px rgba(0,0,0,.20);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: clamp(2.2rem, 6vw, 3.2rem);
+      font-weight: 900;
+      color: var(--text);
+      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+      user-select:none;
+      position:relative;
+      overflow:hidden;
+    }
+    .cell:before{
+      content:"";
+      position:absolute; inset:-30%;
+      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,.18), transparent 55%);
+      transform: rotate(12deg);
+      opacity:.9;
+    }
+    .cell:hover{ transfor
