@@ -1,253 +1,280 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b1220" />
-  <title>لعبة XO الحديثة - عربية</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة إكس أو الحديثة</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --bg: #f0f2f5;
+            --text: #2d3436;
+            --white: #ffffff;
+            --x-color: #ff7675;
+            --o-color: #00cec9;
+        }
 
-  <style>
-    :root{
-      --bg0:#070b14;
-      --bg1:#0b1220;
-      --card: rgba(255,255,255,.08);
-      --card2: rgba(255,255,255,.12);
-      --stroke: rgba(255,255,255,.14);
-      --text:#eaf0ff;
-      --muted: rgba(234,240,255,.72);
-      --shadow: 0 18px 50px rgba(0,0,0,.45);
-      --radius: 20px;
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
 
-      --a:#59d0ff;
-      --b:#9d7bff;
-      --c:#3cffc8;
-      --d:#ffcc4d;
-      --e:#ff5fa2;
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-      --win:#44ffb8;
-      --lose:#ff6b8b;
-      --draw:#ffd166;
-    }
+        .container {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
 
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
-      color:var(--text);
-      min-height:100svh;
-      background:
-        radial-gradient(900px 500px at 10% 15%, rgba(89,208,255,.22), transparent 60%),
-        radial-gradient(700px 450px at 95% 20%, rgba(157,123,255,.22), transparent 60%),
-        radial-gradient(900px 600px at 40% 105%, rgba(60,255,200,.18), transparent 60%),
-        linear-gradient(180deg, var(--bg0), var(--bg1));
-      display:flex;
-      align-items:stretch;
-      justify-content:center;
-    }
+        h1 { margin-bottom: 1.5rem; color: var(--primary); }
 
-    /* App layout */
-    .app{
-      width:min(1100px, 100%);
-      display:flex;
-      flex-direction:column;
-      min-height:100svh;
-      padding: 18px 18px 88px; /* bottom space for pinned footer */
-      gap:16px;
-    }
+        /* الشاشات */
+        .screen { display: none; }
+        .screen.active { display: block; }
 
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:12px;
-      padding: 14px 16px;
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      border:1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-    }
+        /* القائمة والمدخلات */
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            outline: none;
+            transition: 0.3s;
+            text-align: center;
+        }
+        input:focus { border-color: var(--primary); }
 
-    .brand{
-      display:flex;
-      gap:12px;
-      align-items:center;
-      min-width: 220px;
-    }
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
 
-    .logo{
-      width:42px;height:42px;border-radius:14px;
-      background: conic-gradient(from 180deg, var(--a), var(--b), var(--c), var(--e), var(--a));
-      box-shadow: 0 12px 30px rgba(0,0,0,.35);
-      position:relative;
-      overflow:hidden;
-    }
-    .logo:after{
-      content:"";
-      position:absolute; inset:-40%;
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.55), transparent 60%);
-      transform: rotate(20deg);
-    }
+        /* لوحة اللعب */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
 
-    .brand h1{
-      margin:0;
-      font-size: 1.05rem;
-      line-height:1.2;
-      letter-spacing:.2px;
-      font-weight:800;
-    }
-    .brand .sub{
-      margin:2px 0 0;
-      font-size:.85rem;
-      color:var(--muted);
-    }
+        .cell {
+            aspect-ratio: 1/1;
+            background: #eee;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .cell:hover { background: #e0e0e0; }
+        .cell.x { color: var(--x-color); }
+        .cell.o { color: var(--o-color); }
 
-    .actions{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+        .status {
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
 
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.06);
-      border:1px solid rgba(255,255,255,.12);
-      color:var(--text);
-      font-size:.92rem;
-      user-select:none;
-      white-space:nowrap;
-    }
+        /* التذييل الإلزامي */
+        footer {
+            margin-top: auto;
+            padding: 20px;
+            text-align: center;
+            line-height: 1.6;
+            background: #fff;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 15px;
+            margin-top: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+        }
+        .info-label { font-weight: bold; color: var(--primary); }
+    </style>
+</head>
+<body>
 
-    .btn{
-      border:0;
-      cursor:pointer;
-      padding: 10px 14px;
-      border-radius: 14px;
-      color: #06101c;
-      font-weight:800;
-      font-size:.95rem;
-      background: linear-gradient(135deg, var(--d), #fff1b3);
-      box-shadow: 0 14px 30px rgba(0,0,0,.35);
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .btn:active{ transform: scale(.98); }
-    .btn.secondary{
-      color:var(--text);
-      background: rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow: none;
-    }
-    .btn.danger{
-      color: #fff;
-      background: linear-gradient(135deg, var(--lose), #ff3d6e);
-    }
+    <div class="container">
+        <div id="start-screen" class="screen active">
+            <h1>لعبة XO</h1>
+            <p>اختر نمط اللعب:</p>
+            <button class="btn" onclick="setupGame(1)">لاعب ضد الكمبيوتر</button>
+            <button class="btn" onclick="setupGame(2)">لاعب ضد لاعب</button>
+        </div>
 
-    .grid{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap:16px;
-      align-items:stretch;
-      flex:1;
-    }
+        <div id="setup-screen" class="screen">
+            <h2 id="setup-title">إعداد اللاعبين</h2>
+            <input type="text" id="p1-name" placeholder="اسم اللاعب الأول (X)">
+            <input type="text" id="p2-name" placeholder="اسم اللاعب الثاني (O)">
+            <button class="btn" onclick="startGame()">ابدأ اللعب الآن</button>
+        </div>
 
-    @media (max-width: 900px){
-      .grid{ grid-template-columns: 1fr; }
-      .brand{ min-width:auto; }
-    }
+        <div id="game-screen" class="screen">
+            <div id="status" class="status">دور اللاعب: </div>
+            <div class="board" id="board">
+                <div class="cell" data-index="0"></div>
+                <div class="cell" data-index="1"></div>
+                <div class="cell" data-index="2"></div>
+                <div class="cell" data-index="3"></div>
+                <div class="cell" data-index="4"></div>
+                <div class="cell" data-index="5"></div>
+                <div class="cell" data-index="6"></div>
+                <div class="cell" data-index="7"></div>
+                <div class="cell" data-index="8"></div>
+            </div>
+            <button class="btn" onclick="resetGame()">إعادة اللعب</button>
+            <button class="btn" style="background:#636e72" onclick="location.reload()">الرئيسية</button>
+        </div>
+    </div>
 
-    .card{
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      border:1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      overflow:hidden;
-      position:relative;
-    }
+    <footer>
+        <p><span class="info-label">اسم الطالب:</span> عبدالله خالد بن عبدالله الزهراني</p>
+        <p><span class="info-label">Student ID:</span> 446005945</p>
+        <p><span class="info-label">إشراف:</span> Mohammed Ahmed Jabali</p>
+    </footer>
 
-    .cardHeader{
-      padding: 14px 16px;
-      border-bottom: 1px solid rgba(255,255,255,.10);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    .cardHeader h2{
-      margin:0;
-      font-size:1rem;
-      letter-spacing:.2px;
-    }
-    .cardBody{
-      padding: 16px;
-    }
+    <script>
+        let gameMode = 1; // 1: PC, 2: PvP
+        let currentPlayer = 'X';
+        let gameState = ["", "", "", "", "", "", "", "", ""];
+        let gameActive = true;
+        let names = { X: "لاعب 1", O: "لاعب 2" };
 
-    /* Board */
-    .boardWrap{
-      display:flex;
-      flex-direction:column;
-      gap:14px;
-    }
+        const winningConditions = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
 
-    .statusRow{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
-    }
-    .statusText{
-      font-size:1rem;
-      font-weight:800;
-    }
-    .statusHint{
-      color:var(--muted);
-      font-size:.9rem;
-    }
+        function setupGame(mode) {
+            gameMode = mode;
+            document.getElementById('start-screen').classList.remove('active');
+            document.getElementById('setup-screen').classList.add('active');
+            if(mode === 1) {
+                document.getElementById('p2-name').value = "الكمبيوتر";
+                document.getElementById('p2-name').disabled = true;
+            }
+        }
 
-    .board{
-      width:min(420px, 100%);
-      aspect-ratio:1/1;
-      margin-inline:auto;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      padding: 14px;
-      border-radius: calc(var(--radius) + 8px);
-      background: rgba(0,0,0,.18);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: inset 0 0 0 1px rgba(255,255,255,.04);
-    }
+        function startGame() {
+            const p1 = document.getElementById('p1-name').value;
+            const p2 = document.getElementById('p2-name').value;
+            if(p1) names.X = p1;
+            if(p2) names.O = p2;
 
-    .cell{
-      border:0;
-      cursor:pointer;
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
-      border:1px solid rgba(255,255,255,.12);
-      box-shadow: 0 10px 25px rgba(0,0,0,.20);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-size: clamp(2.2rem, 6vw, 3.2rem);
-      font-weight: 900;
-      color: var(--text);
-      transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
-      user-select:none;
-      position:relative;
-      overflow:hidden;
-    }
-    .cell:before{
-      content:"";
-      position:absolute; inset:-30%;
-      background: radial-gradient(circle at 20% 20%, rgba(255,255,255,.18), transparent 55%);
-      transform: rotate(12deg);
-      opacity:.9;
-    }
-    .cell:hover{ transfor
+            document.getElementById('setup-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            updateStatus();
+        }
+
+        function updateStatus() {
+            const statusDisplay = document.getElementById('status');
+            statusDisplay.innerText = `دور: ${names[currentPlayer]} (${currentPlayer})`;
+        }
+
+        function handleCellClick(e) {
+            const clickedCell = e.target;
+            const clickedIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+            if (gameState[clickedIndex] !== "" || !gameActive) return;
+
+            makeMove(clickedCell, clickedIndex);
+
+            if (gameActive && gameMode === 1 && currentPlayer === 'O') {
+                setTimeout(computerMove, 500);
+            }
+        }
+
+        function makeMove(cell, index) {
+            gameState[index] = currentPlayer;
+            cell.innerText = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+            
+            checkResult();
+            if (gameActive) {
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+                updateStatus();
+            }
+        }
+
+        function computerMove() {
+            let emptyIndices = gameState.map((v, i) => v === "" ? i : null).filter(v => v !== null);
+            if (emptyIndices.length > 0) {
+                const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+                const cell = document.querySelector(`[data-index="${randomIndex}"]`);
+                makeMove(cell, randomIndex);
+            }
+        }
+
+        function checkResult() {
+            let roundWon = false;
+            for (let i = 0; i <= 7; i++) {
+                const winCondition = winningConditions[i];
+                let a = gameState[winCondition[0]];
+                let b = gameState[winCondition[1]];
+                let c = gameState[winCondition[2]];
+                if (a === '' || b === '' || c === '') continue;
+                if (a === b && b === c) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                document.getElementById('status').innerText = `🎉 مبروك! فاز ${names[currentPlayer]}`;
+                gameActive = false;
+                return;
+            }
+
+            if (!gameState.includes("")) {
+                document.getElementById('status').innerText = "تعادل!";
+                gameActive = false;
+            }
+        }
+
+        function resetGame() {
+            currentPlayer = "X";
+            gameState = ["", "", "", "", "", "", "", "", ""];
+            gameActive = true;
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.innerText = "";
+                cell.classList.remove('x', 'o');
+            });
+            updateStatus();
+        }
+
+        document.querySelectorAll('.cell').forEach(cell => cell.addEventListener('click', handleCellClick));
+    </script>
+</body>
+</html>
